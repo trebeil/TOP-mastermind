@@ -6,42 +6,44 @@ puts 'Hello Player! Welcome to Mastermind!'
 sleep 1
 
 loop do
-  game = Game.new
+  puts
+  puts 'Which game mode do you want to play?'
+  puts '[1] I want to be the guesser of the secret code'
+  puts '[2] I want to be the creator of the secret code'
+  mode = gets.chomp.to_i
+  until /^[12]{1}$/.match?(mode.to_s)
+    puts
+    puts 'Please choose a valid option. Which game mode do you want to play?'
+    puts '[1] I want to be the guesser of the secret code'
+    puts '[2] I want to be the creator of the secret code'
+    mode = gets.chomp.to_i
+  end
+
+  game = Game.new(mode)
 
   puts
   puts 'How many rounds do you want the game to have?'
 
   game.define_rounds
-=begin
-  puts
-  puts 'Ok, now the computer will select the colors!'
-  puts 'Selecting colors...'
-  sleep 1
-  puts '.'
-  sleep 1
-  puts '.'
-  sleep 1
-  puts '.'
-  sleep 1
-=end
-  game.randomize_model_colors
 
-  puts 'Great, colors chosen! Let\'s start!'
-  #sleep 1
+  game.model = if game.mode == 1
+                 game.choose_random_colors
+               else
+                 game.player_choose_colors
+               end
+
+  puts 'Great, color code chosen! Let\'s start!'
+  sleep 1
 
   loop do
     puts '_________________________________________________________________'
     puts "Round #{game.round} of #{game.rounds}"
-    puts
-    puts 'Choose a sequence of 4 colors among the options below. Type your ' \
-         'choices separated by blank spaces (e.g.: 2 5 6 1). ' \
-         'Repeated colors are allowed.'
-    puts
-    puts "\033[40m  1  \033[0m \e[41m  2  \e[0m \e[42m  3  \e[0m " \
-         "\033[43m  4  \033[0m \e[44m  5  \e[0m \e[45m  6  \e[0m " \
-         "\033[46m  7  \033[0m \e[30;47m  8  \e[0m"
 
-    game.choose_colors
+    game.guesses[game.round - 1] = if game.mode == 1
+                                     game.player_choose_colors
+                                   else
+                                     game.computer_choose_colors
+                                   end
     game.play_round
     game.print_rounds
     puts
