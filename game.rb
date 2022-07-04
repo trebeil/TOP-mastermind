@@ -19,10 +19,7 @@ class Game
   def randomize_model_colors
     self.model = Array.new(3)
     model = self.model
-    (0..3).each do |i|
-      model[i] = Random.new.rand(40..47)
-      model[i] = Random.new.rand(40..47) until model.one?(model[i])
-    end
+    (0..3).each { |i| model[i] = Random.new.rand(40..47) }
   end
 
   def choose_colors
@@ -33,19 +30,29 @@ class Game
 
   def play_round
     self.pins[round - 1] = []
-    guesses[round - 1].each_with_index do |guess, idx_guess|
-      model.each_with_index do |color, idx_model|
-        if guess == color && idx_guess == idx_model
-          self.pins[round - 1][idx_guess] = 'red'
-          break
-        elsif guess == color && idx_guess != idx_model
-          self.pins[round - 1][idx_guess] = 'yellow'
-          break
-        else
-          self.pins[round - 1][idx_guess] = 'white'
-        end
+    guess_copy = guesses[round - 1].clone
+    model_copy = model.clone
+    i = 0
+    while i < guess_copy.length
+      if guess_copy[i] == model_copy[i]
+        self.pins[round - 1].push('red')
+        model_copy.delete_at(i)
+        guess_copy.delete_at(i)
+        i -= 1
       end
+      i += 1
     end
+    i = 0
+    while i < guess_copy.length
+      if model_copy.any?(guess_copy[i])
+        self.pins[round - 1].push('yellow')
+        model_copy.delete_at(model_copy.index(guess_copy[i]))
+        guess_copy.delete_at(i)
+        i -= 1
+      end
+      i += 1
+    end
+    guess_copy.each { self.pins[round - 1].push('white') }
   end
 
   def print_rounds
